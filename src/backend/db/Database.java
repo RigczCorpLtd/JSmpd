@@ -70,7 +70,7 @@ public class Database {
 
     public List<Measurement> getMeasurements() {
         if (allMeasurements == null) {
-            allMeasurements = new ArrayList<>();
+            allMeasurements = new ArrayList<>(clazzes.get(0).getMeasurements());
             for (int i = 1; i < clazzes.size(); i++) {
                 allMeasurements.addAll(clazzes.get(i).getMeasurements());
             }
