@@ -29,24 +29,6 @@ public class Database {
 
     }
 
-    public List<Clazz> getClazzes() {
-        return clazzes;
-    }
-
-    public List<Integer> getFeatureIds() {
-        return featureIds;
-    }
-
-    public List<Sample> getMeasurements() {
-        if (allSamples == null) {
-            allSamples = new ArrayList<>();
-            for (int i = 1; i < clazzes.size(); i++) {
-                allSamples.addAll(clazzes.get(i).getSamples());
-            }
-        }
-        return allSamples;
-    }
-
     private void processHeader(String header) throws IOException {
         numberOfFeatures = Integer.parseInt(header.substring(0, header.indexOf(',')));
         StringTokenizer tokenizer = new StringTokenizer(header.substring(header.indexOf(',')), ",");
@@ -75,4 +57,21 @@ public class Database {
         });
     }
 
+    public List<Clazz> getClazzes() {
+        return clazzes;
+    }
+
+    public List<Integer> getFeatureIds() {
+        return featureIds;
+    }
+
+    public List<Sample> getMeasurements() {
+        if (allSamples == null) {
+            allSamples = new ArrayList<>(clazzes.get(0).getSamples());
+            for (int i = 1; i < clazzes.size(); i++) {
+                allSamples.addAll(clazzes.get(i).getSamples());
+            }
+        }
+        return allSamples;
+    }
 }
