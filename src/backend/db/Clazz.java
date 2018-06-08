@@ -8,7 +8,7 @@ public class Clazz {
 
     private String name;
 
-    private List<Measurement> measurements = new ArrayList<>();
+    private List<Sample> samples = new ArrayList<>();
 
     public Clazz(String name) {
         this.name = name;
@@ -28,12 +28,12 @@ public class Clazz {
         return Objects.hash(name);
     }
 
-    public List<Measurement> getMeasurements() {
-        return measurements;
+    public List<Sample> getSamples() {
+        return samples;
     }
 
     public int getNumberOfMeasurements() {
-        return measurements.size();
+        return samples.size();
     }
 
     public String getName() {

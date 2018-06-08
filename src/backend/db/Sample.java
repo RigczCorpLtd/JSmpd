@@ -1,13 +1,10 @@
 package backend.db;
 
-import java.util.Arrays;
-import java.util.List;
-
-public class Measurement {
+public class Sample {
     private Clazz clazz;
     private double[] features;
 
-    Measurement(Clazz clazz, double[] features) {
+    Sample(Clazz clazz, double[] features) {
         this.clazz = clazz;
         this.features = features;
     }
