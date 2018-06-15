@@ -1,12 +1,21 @@
 package backend.db;
 
+import java.util.Objects;
+
 public class Sample {
     private Clazz clazz;
-    private double[] features;
 
-    Sample(Clazz clazz, double[] features) {
+    public double[] getFeatures() {
+        return features;
+    }
+
+    private double[] features;
+    private int id;
+
+    Sample(Clazz clazz, double[] features, int id) {
         this.clazz = clazz;
         this.features = features;
+        this.id = id;
     }
 
     public Clazz getClazz() {
@@ -15,5 +24,19 @@ public class Sample {
 
     public double getFeatureById(int id) {
         return features[id];
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Sample)) return false;
+        Sample sample = (Sample) o;
+        return id == sample.id;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id);
     }
 }

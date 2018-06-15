@@ -1,5 +1,7 @@
 package frontend;
 
+import backend.classfier.ClassfierEngine;
+import backend.db.Database;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
@@ -7,6 +9,15 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 
 public class Controller {
@@ -32,6 +43,7 @@ public class Controller {
     private TextArea classfiersOutput;
 
     private ToggleGroup featureToggleGroup;
+    private Database database;
 
 
     @FXML
@@ -45,6 +57,7 @@ public class Controller {
     private void initClassifiers() {
         classifiersComboBox.getItems().setAll(Classifier.values());
         classifiersComboBox.getSelectionModel().select(0);
+        kComboBox.setDisable(true);
     }
 
     private void initFisher() {
@@ -75,7 +88,30 @@ public class Controller {
 
     @FXML
     public void onClassfiersOpenFile() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open File");
+        File file = chooser.showOpenDialog(new Stage());
 
+        if (file != null) {
+            try {
+                initDatabase(file);
+                initKComboBox();
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    private void initDatabase(File file) throws IOException {
+        database = new Database(file);
+
+    }
+
+    private void initKComboBox() {
+        int size = database.getMeasurements().size();
+        List<Integer> kRange = IntStream.rangeClosed(1, size - 1)
+                .boxed().collect(toList());
+        kComboBox.getItems().setAll(kRange);
+        kComboBox.getSelectionModel().select(0);
     }
 
     @FXML
@@ -90,6 +126,18 @@ public class Controller {
 
     @FXML
     public void onClassifiersExecute() {
+        ClassfierEngine classfierEngine = new ClassfierEngine(database, Long.valueOf(trainingPart.getText()), (Integer) kComboBox.getSelectionModel().getSelectedItem());
+        classfiersOutput.setText("Dobrze zaklasyfikowano: " + classfierEngine.nearestNeighborhood() + "%");
+    }
 
+    @FXML
+    public void onClassifiersChange() {
+        Classifier classifier = (Classifier) classifiersComboBox.getSelectionModel().getSelectedItem();
+
+        kComboBox.setDisable(classifier.isNormal());
+
+        if (classifier.isNormal()) {
+            kComboBox.getSelectionModel().select(0);
+        }
     }
 }

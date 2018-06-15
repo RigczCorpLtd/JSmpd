@@ -22,8 +22,11 @@ public class Database {
             String firstLine = reader.readLine();
             processHeader(firstLine);
             String line;
+
+            int id = 0;
             while ((line = reader.readLine()) != null) {
-                processLine(line);
+                processLine(line, id);
+                id = id + 1;
             }
         }
 
@@ -37,7 +40,7 @@ public class Database {
         }
     }
 
-    private void processLine(String line) {
+    private void processLine(String line, int id) {
         String className = line.substring(0, line.indexOf(','));
         Clazz clazz = getOrCreateClazz(className);
         StringTokenizer tokenizer = new StringTokenizer(line.substring(line.indexOf(',')), ",");
@@ -45,7 +48,7 @@ public class Database {
         for (int i = 0; i < numberOfFeatures; i++) {
             features[i] = Double.parseDouble(tokenizer.nextToken());
         }
-        clazz.getSamples().add(new Sample(clazz, features));
+        clazz.getSamples().add(new Sample(clazz, features, id));
     }
 
     private Clazz getOrCreateClazz(String clazzName) {
