@@ -77,4 +77,8 @@ public class Database {
         }
         return allSamples;
     }
+
+    public int getNumberOfFeatures() {
+        return numberOfFeatures;
+    }
 }
