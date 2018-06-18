@@ -42,6 +42,10 @@ public class Database {
 
     private void processLine(String line, int id) {
         String className = line.substring(0, line.indexOf(','));
+        int classNamePos;
+        if ((classNamePos = className.indexOf(' ') ) != -1) {
+            className = className.substring(0, classNamePos);
+        }
         Clazz clazz = getOrCreateClazz(className);
         StringTokenizer tokenizer = new StringTokenizer(line.substring(line.indexOf(',')), ",");
         double[] features = new double[numberOfFeatures];
