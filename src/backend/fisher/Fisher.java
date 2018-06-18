@@ -6,6 +6,7 @@ import backend.db.Sample;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,9 @@ public class Fisher {
     }
 
     private void method() {
+        if (database.getClazzes().size() != 2) {
+            throw new RuntimeException("Cannot compute fisher for any other number of classes than 2");
+        }
         computeAvgMatrices();
         computeCovarianceMatrices();
         computeFisher();
@@ -66,7 +70,15 @@ public class Fisher {
         RealMatrix sumOfAllCovarianceMats = covarianceMatrices.entrySet().stream()
                 .map(Map.Entry::getValue)
                 .reduce(MatrixUtils.createRealMatrix(numberOfFeaturesChosen, numberOfFeaturesChosen), RealMatrix::add);
-        double determant = new LUDecomposition(sumOfAllCovarianceMats).getDeterminant();
-       // avgMatrices.entrySet().stream().
+        double determent = new LUDecomposition(sumOfAllCovarianceMats).getDeterminant();
+        double distance = new EuclideanDistance().compute(
+                avgMatrices.entrySet().iterator().next().getValue().getColumn(0),
+                avgMatrices.entrySet().iterator().next().getValue().getColumn(0));
+        value = distance/determent;
+
+    }
+
+    public double getValue() {
+        return value;
     }
 }
