@@ -181,4 +181,9 @@ public class Controller {
             kComboBox.getSelectionModel().select(0);
         }
     }
+
+    @FXML
+    public void onKchange() {
+        classfierEngine.setK(Long.valueOf((Integer) kComboBox.getSelectionModel().getSelectedItem()));
+    }
 }

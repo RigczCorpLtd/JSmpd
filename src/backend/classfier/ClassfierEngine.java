@@ -15,7 +15,7 @@ import static backend.classfier.NearestNeighborhood.getNearestClassName;
  */
 public class ClassfierEngine {
     private final Long trainingPart;
-    private final Long k;
+    private Long k;
     private final List<Sample> measurements;
     private List<Sample> trainingSamples;
     private List<Sample> samplesToClassify;
@@ -72,11 +72,15 @@ public class ClassfierEngine {
 
         int trainingPartSize = (int) (measurements.size() * (trainingPart / 100d));
 
-        for (int i = 0; i <= trainingPartSize; i++) {
+        for (int i = 0; i < trainingPartSize; i++) {
             int randomIndex = rand.nextInt(copiedList.size());
             Sample randomElement = copiedList.get(randomIndex);
             copiedList.remove(randomIndex);
             trainingSamples.add(randomElement);
         }
+    }
+
+    public void setK(Long k) {
+        this.k = k;
     }
 }
