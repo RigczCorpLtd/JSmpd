@@ -15,6 +15,7 @@ import static backend.classfier.NearestNeighborhood.getNearestClassName;
  */
 public class ClassfierEngine {
     private final Long trainingPart;
+    private final int featureCount;
     private Long k;
     private final List<Sample> measurements;
     private List<Sample> trainingSamples;
@@ -25,6 +26,7 @@ public class ClassfierEngine {
         this.k = Long.valueOf(k);
         measurements = database.getMeasurements();
         trainingSamples = new ArrayList<>();
+        featureCount = database.getFeatureIds().size();
     }
 
     public void prepareSamples() {
@@ -35,7 +37,7 @@ public class ClassfierEngine {
     public double nearestMean() {
         Long correctClassify = 0L;
         for (Sample sampleToClassify : samplesToClassify) {
-            String nearestClassName = getNearestMeanClassName(trainingSamples, sampleToClassify, k);
+            String nearestClassName = getNearestMeanClassName(trainingSamples, sampleToClassify, k, featureCount);
 
             if (nearestClassName.equals(sampleToClassify.getClazz().getName())) {
                 correctClassify = correctClassify + 1;

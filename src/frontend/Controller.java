@@ -163,7 +163,7 @@ public class Controller {
             case NN: case kNN:
                 result = classfierEngine.nearestNeighborhood();
                 break;
-            case NM: case kNM:
+            case NM:
                 result = classfierEngine.nearestMean();
                 break;
         }
