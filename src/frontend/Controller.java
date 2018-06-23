@@ -3,6 +3,7 @@ package frontend;
 import backend.classfier.ClassfierEngine;
 import backend.db.Database;
 import backend.fisher.FisherRunner;
+import backend.sfs.SFS;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
@@ -16,6 +17,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -105,7 +107,12 @@ public class Controller {
         if (fisherRadioButton.isSelected()) {
             FisherRunner fisherRunner = new FisherRunner(database, featureNumberComboBox.getSelectionModel().getSelectedItem());
             fisherRunner.run();
-            featureSelectionOutput.appendText(fisherRunner.getResult().toString());
+            featureSelectionOutput.appendText(fisherRunner.getResult().toString() + "\n");
+        }
+        if (SFSRadioButton.isSelected()) {
+            SFS sfs = new SFS(database, featureNumberComboBox.getSelectionModel().getSelectedItem());
+            sfs.compute();
+            featureSelectionOutput.appendText(sfs.getResult().stream().map(p -> p.toString()).collect(Collectors.joining(",")));
         }
     }
 

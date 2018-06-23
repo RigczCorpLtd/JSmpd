@@ -10,6 +10,7 @@ import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class Fisher {
@@ -25,6 +26,16 @@ public class Fisher {
         this.combinationOfFeatures = combinationOfFeatures;
         this.database = database;
         this.numberOfFeaturesChosen = combinationOfFeatures.length;
+    }
+
+    public static double compute(Database database, List<Integer> combinationOfFeatures) {
+        return compute(database, combinationOfFeatures.stream().mapToInt(i->i).toArray());
+    }
+
+    public static double compute(Database database, int[] combinationOfFeatures) {
+        Fisher fisher = new Fisher(database, combinationOfFeatures);
+        fisher.run();
+        return fisher.getValue();
     }
 
     public void run() {
