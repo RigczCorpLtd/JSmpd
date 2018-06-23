@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.*?>
-<?import javafx.scene.control.*?>
-<?import java.lang.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="475.0" prefWidth="864.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="frontend.Controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="475.0" prefWidth="864.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="frontend.Controller">
    <children>
       <TabPane layoutX="80.0" layoutY="94.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
@@ -52,7 +54,7 @@
                         <ComboBox fx:id="kComboBox" layoutX="210.0" layoutY="52.0" prefWidth="150.0" />
                         <Button layoutX="469.0" layoutY="14.0" mnemonicParsing="false" onAction="#onClassifiersTrain" prefHeight="25.0" prefWidth="67.0" text="Train" />
                         <Label layoutX="382.0" layoutY="56.0" text="Training part:" />
-                        <TextArea fx:id="classfiersOutput" editable="false" layoutX="598.0" layoutY="70.0" prefHeight="362.0" prefWidth="252.0" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="70.0" />
+                        <TextArea fx:id="classfiersOutput" editable="false" layoutX="598.0" layoutY="70.0" prefHeight="362.0" prefWidth="252.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="598.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="70.0" />
                         <TextField fx:id="trainingPart" layoutX="469.0" layoutY="52.0" prefHeight="25.0" prefWidth="66.0" />
                         <Button layoutX="598.0" layoutY="14.0" mnemonicParsing="false" onAction="#onClassifiersExecute" text="Execute" />
                      </children>

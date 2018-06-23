@@ -44,6 +44,7 @@ public class Controller {
 
     private ToggleGroup featureToggleGroup;
     private Database database;
+    private ClassfierEngine classfierEngine;
 
 
     @FXML
@@ -121,13 +122,23 @@ public class Controller {
 
     @FXML
     public void onClassifiersTrain() {
-
+        classfierEngine = new ClassfierEngine(database, Long.valueOf(trainingPart.getText()), (Integer) kComboBox.getSelectionModel().getSelectedItem());
+        classfierEngine.prepareSamples();
     }
 
     @FXML
     public void onClassifiersExecute() {
-        ClassfierEngine classfierEngine = new ClassfierEngine(database, Long.valueOf(trainingPart.getText()), (Integer) kComboBox.getSelectionModel().getSelectedItem());
-        classfiersOutput.setText("Dobrze zaklasyfikowano: " + classfierEngine.nearestNeighborhood() + "%");
+        double result = 0;
+        switch ((Classifier) classifiersComboBox.getSelectionModel().getSelectedItem()) {
+            case NN: case kNN:
+                result = classfierEngine.nearestNeighborhood();
+                break;
+            case NM: case kNM:
+                result = classfierEngine.nearestMean();
+                break;
+        }
+
+        classfiersOutput.setText("Dobrze zaklasyfikowano: " + result + "%");
     }
 
     @FXML

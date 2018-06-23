@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static backend.classfier.NearestMean.getNearestMeanClassName;
 import static backend.classfier.NearestNeighborhood.getNearestClassName;
 
 /**
@@ -26,11 +27,25 @@ public class ClassfierEngine {
         trainingSamples = new ArrayList<>();
     }
 
-
-    public double nearestNeighborhood() {
+    public void prepareSamples() {
         prepareTrainingSamples();
         prepareTestSamples();
+    }
 
+    public double nearestMean() {
+        Long correctClassify = 0L;
+        for (Sample sampleToClassify : samplesToClassify) {
+            String nearestClassName = getNearestMeanClassName(trainingSamples, sampleToClassify, k);
+
+            if (nearestClassName.equals(sampleToClassify.getClazz().getName())) {
+                correctClassify = correctClassify + 1;
+            }
+        }
+
+        return ((double) correctClassify / samplesToClassify.size() * 100);
+    }
+
+    public double nearestNeighborhood() {
         Long correctClassify = 0L;
         for (Sample sampleToClassify : samplesToClassify) {
             String nearestClassName = getNearestClassName(trainingSamples, sampleToClassify, k);
