@@ -9,6 +9,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class Fisher {
@@ -20,13 +22,23 @@ public class Fisher {
     private double value;
 
 
-    public Fisher(int[] combinationOfFeatures, Database database) {
+    public Fisher(Database database, int[] combinationOfFeatures) {
         this.combinationOfFeatures = combinationOfFeatures;
         this.database = database;
         this.numberOfFeaturesChosen = combinationOfFeatures.length;
     }
 
-    private void method() {
+    public static double compute(Database database, List<Integer> combinationOfFeatures) {
+        return compute(database, combinationOfFeatures.stream().mapToInt(i->i).toArray());
+    }
+
+    public static double compute(Database database, int[] combinationOfFeatures) {
+        Fisher fisher = new Fisher(database, combinationOfFeatures);
+        fisher.run();
+        return fisher.getValue();
+    }
+
+    public void run() {
         if (database.getClazzes().size() != 2) {
             throw new RuntimeException("Cannot compute fisher for any other number of classes than 2");
         }
@@ -37,30 +49,31 @@ public class Fisher {
 
     private void computeAvgMatrices() {
         for (Clazz clazz : database.getClazzes()) {
-            RealMatrix avgMatrix = avgMatrices.put(clazz, MatrixUtils.createRealMatrix(numberOfFeaturesChosen, 1));
+            RealMatrix avgMatrix = MatrixUtils.createRealMatrix(numberOfFeaturesChosen, 1);
             for (Sample sample : clazz.getSamples()) {
-                for (int i = 0; i < numberOfFeaturesChosen - 1; i++) {
-                    avgMatrix.setEntry(i, 1, avgMatrix.getEntry(i, 1) + sample.getFeatureById(combinationOfFeatures[i]));
+                for (int i = 0; i < numberOfFeaturesChosen; i++) {
+                    avgMatrix.setEntry(i, 0, avgMatrix.getEntry(i, 0) + sample.getFeatureById(combinationOfFeatures[i]));
                 }
             }
-            avgMatrix.scalarMultiply(1/clazz.getNumberOfMeasurements());
+            avgMatrices.put(clazz,avgMatrix.scalarMultiply(1D/clazz.getNumberOfMeasurements()));
         }
     }
 
     private void computeCovarianceMatrices() {
         for (Clazz clazz : database.getClazzes()) {
             RealMatrix covarianceMatrix = initCovarianceMatrixForClass(clazz);
-            covarianceMatrix = covarianceMatrix.multiply(covarianceMatrix.transpose()).scalarMultiply(1 / clazz.getNumberOfMeasurements());
+            covarianceMatrix = covarianceMatrix.multiply(covarianceMatrix.transpose()).scalarMultiply(1D/ clazz.getNumberOfMeasurements());
             covarianceMatrices.put(clazz, covarianceMatrix);
         }
     }
 
     private RealMatrix initCovarianceMatrixForClass(Clazz clazz) {
-        RealMatrix covarianceMatrix = avgMatrices.put(clazz, MatrixUtils.createRealMatrix(numberOfFeaturesChosen, clazz.getNumberOfMeasurements()));
+        RealMatrix covarianceMatrix = MatrixUtils.createRealMatrix(numberOfFeaturesChosen, clazz.getNumberOfMeasurements());
+        covarianceMatrices.put(clazz, covarianceMatrix);
         for (int j = 0; j < clazz.getNumberOfMeasurements(); j++) {
-            for (int i = 0; i < numberOfFeaturesChosen - 1; i++) {
+            for (int i = 0; i < numberOfFeaturesChosen; i++) {
                 covarianceMatrix.setEntry(i, j,
-                        clazz.getSamples().get(j).getFeatureById(combinationOfFeatures[i]) - avgMatrices.get(clazz).getEntry(i, 1));
+                        clazz.getSamples().get(j).getFeatureById(combinationOfFeatures[i]) - avgMatrices.get(clazz).getEntry(i, 0));
             }
         }
         return covarianceMatrix;
@@ -71,9 +84,10 @@ public class Fisher {
                 .map(Map.Entry::getValue)
                 .reduce(MatrixUtils.createRealMatrix(numberOfFeaturesChosen, numberOfFeaturesChosen), RealMatrix::add);
         double determent = new LUDecomposition(sumOfAllCovarianceMats).getDeterminant();
+        Iterator<Map.Entry<Clazz, RealMatrix>> iterator = avgMatrices.entrySet().iterator();
         double distance = new EuclideanDistance().compute(
-                avgMatrices.entrySet().iterator().next().getValue().getColumn(0),
-                avgMatrices.entrySet().iterator().next().getValue().getColumn(0));
+                iterator.next().getValue().getColumn(0),
+                iterator.next().getValue().getColumn(0));
         value = distance/determent;
 
     }

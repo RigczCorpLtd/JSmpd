@@ -2,6 +2,8 @@ package frontend;
 
 import backend.classfier.ClassfierEngine;
 import backend.db.Database;
+import backend.fisher.FisherRunner;
+import backend.sfs.SFS;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
@@ -15,6 +17,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -26,7 +29,7 @@ public class Controller {
     @FXML
     private ImageView preprocessingBottomImageView;
     @FXML
-    private ComboBox<Classifier> featureNumberComboBox;
+    private ComboBox<Integer> featureNumberComboBox;
     @FXML
     private RadioButton fisherRadioButton;
     @FXML
@@ -74,7 +77,25 @@ public class Controller {
 
     @FXML
     public void onFeaturesSelectionOpenFile() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open File");
+        File file = chooser.showOpenDialog(new Stage());
 
+        if (file != null) {
+            try {
+                initDatabase(file);
+                initFeatureNumberComboBox();
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    private void initFeatureNumberComboBox() {
+        int size = database.getFeatureIds().size();
+        List<Integer> kRange = IntStream.rangeClosed(1, size)
+                .boxed().collect(toList());
+        featureNumberComboBox.getItems().setAll(kRange);
+        featureNumberComboBox.getSelectionModel().select(0);
     }
 
     @FXML
@@ -84,7 +105,16 @@ public class Controller {
 
     @FXML
     public void onFeatureSelectionCompute() {
-
+        if (fisherRadioButton.isSelected()) {
+            FisherRunner fisherRunner = new FisherRunner(database, featureNumberComboBox.getSelectionModel().getSelectedItem());
+            fisherRunner.run();
+            featureSelectionOutput.appendText(fisherRunner.getResult().toString() + "\n");
+        }
+        if (SFSRadioButton.isSelected()) {
+            SFS sfs = new SFS(database, featureNumberComboBox.getSelectionModel().getSelectedItem());
+            sfs.compute();
+            featureSelectionOutput.appendText(sfs.getResult().stream().map(p -> p.toString()).collect(Collectors.joining(",")));
+        }
     }
 
     @FXML

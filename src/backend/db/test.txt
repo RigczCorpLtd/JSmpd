@@ -1,0 +1,9 @@
+2, 0, 1
+Test1 Class,1,-1
+Test1 Class,1,0
+Test1 Class,2,-1
+Test1 Class,1,-1
+Test2 Class,1,1
+Test2 Class,1,1
+Test2 Class,2,2
+Test2 Class,2,1
