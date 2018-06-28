@@ -2,7 +2,6 @@ package backend.classfier;
 
 import backend.db.Clazz;
 import backend.db.Sample;
-import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,18 +11,16 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
-public class NearestMean extends AbstractClassfier{
+public class NearestMean extends AbstractClassfier {
 
     private final List<Sample> trainingSample;
-    private final Long k;
     private final List<Sample> samplesToClassify;
     private int featureCount;
     private final Map<Clazz, Double[]> classMean;
 
-    public NearestMean(List<Sample> trainingSample, List<Sample> samplesToClassify, Long k, int featureCount) {
+    public NearestMean(List<Sample> trainingSample, List<Sample> samplesToClassify, int featureCount) {
         this.trainingSample = trainingSample;
         this.samplesToClassify = samplesToClassify;
-        this.k = k;
         this.featureCount = featureCount;
         classMean = new HashMap<>();
     }
@@ -49,11 +46,6 @@ public class NearestMean extends AbstractClassfier{
 
     private Clazz getClassWithTheLowestDistance(Map<Clazz, Double> classDistances) {
         return classDistances.entrySet().stream().min(Map.Entry.comparingByValue()).get().getKey();
-    }
-
-    private double calculateDistance(double[] trainSampleVector, Sample sampleToClassify) {
-        EuclideanDistance euclideanDistance = new EuclideanDistance();
-        return euclideanDistance.compute(trainSampleVector, sampleToClassify.getFeatures());
     }
 
     private void calculateClassMeans(Map<Clazz, List<Sample>> classSamples) {

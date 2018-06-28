@@ -167,6 +167,8 @@ public class Controller {
             case NM:
                 result = classfierEngine.nearestMean();
                 break;
+            case kNM:
+                result = classfierEngine.kNearestMean();
         }
 
         classfiersOutput.setText("Dobrze zaklasyfikowano: " + result + "%");

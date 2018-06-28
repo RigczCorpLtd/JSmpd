@@ -33,9 +33,15 @@ public class ClassfierEngine {
     }
 
     public double nearestMean() {
-        NearestMean nearestMean = new NearestMean(trainingSamples, samplesToClassify, k, featureCount);
+        NearestMean nearestMean = new NearestMean(trainingSamples, samplesToClassify, featureCount);
         return getCorrectlyClassifyPercentage(nearestMean);
     }
+
+    public double kNearestMean() {
+        KNM knm = new KNM(trainingSamples, samplesToClassify, k, featureCount);
+        return getCorrectlyClassifyPercentage(knm);
+    }
+
 
     public double nearestNeighborhood() {
         NearestNeighborhood nearestNeighborhood = new NearestNeighborhood(trainingSamples, samplesToClassify, k);
