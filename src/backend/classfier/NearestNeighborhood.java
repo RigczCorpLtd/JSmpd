@@ -1,6 +1,8 @@
 package backend.classfier;
 
+import backend.db.Clazz;
 import backend.db.Sample;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 import java.util.List;
 import java.util.Map;
@@ -16,32 +18,44 @@ import static java.util.stream.Collectors.toList;
 public class NearestNeighborhood extends AbstractClassfier {
 
     private final List<Sample> trainingSamples;
+    private List<Sample> samplesToClassify;
     private final Long k;
 
-    public NearestNeighborhood(List<Sample> trainingSamples, Sample sampleToClassify, Long k) {
-        super(sampleToClassify);
+    public NearestNeighborhood(List<Sample> trainingSamples, List<Sample> samplesToClassify, Long k) {
         this.trainingSamples = trainingSamples;
+        this.samplesToClassify = samplesToClassify;
         this.k = k;
     }
 
-    public static String getNearestClassName(List<Sample> trainingSample, Sample sampleToClassify, Long k) {
-        return new NearestNeighborhood(trainingSample, sampleToClassify, k).getNearestClassName();
+
+    @Override
+    public List<ClassfierResult> classify() {
+        return samplesToClassify.stream().map(this::getNearestClassName).collect(Collectors.toList());
     }
 
-    private String getNearestClassName() {
-        List<DistanceResult> distanceResult = trainingSamples.stream().map(this::calculateDistance).collect(toList());
-        return getTheBestResult(distanceResult);
+    private ClassfierResult getNearestClassName(Sample sampleToClassify) {
+        List<DistanceResult> distanceResult = trainingSamples.stream()
+                .map(trainingSample -> calculateDistance(trainingSample, sampleToClassify))
+                .collect(toList());
+        Clazz theBestResult = getTheBestResult(distanceResult);
+        return new ClassfierResult(sampleToClassify, theBestResult);
     }
 
-    private String getTheBestResult(List<DistanceResult> distanceResult) {
-        Map<String, Long> classNameCountResult = distanceResult.stream()
-                .sorted(comparing(result -> result.distance))
+    private Clazz getTheBestResult(List<DistanceResult> distanceResult) {
+        Map<Clazz, Long> classNameCountResult = distanceResult.stream()
+                .sorted(comparing(DistanceResult::getDistance))
                 .limit(k)
-                .collect(groupingBy(DistanceResult::getClassName, Collectors.counting()));
+                .collect(groupingBy(DistanceResult::getClazz, Collectors.counting()));
         return getTheBestResult(classNameCountResult);
     }
 
-    private String getTheBestResult(Map<String, Long> classNameCountResult) {
+    private Clazz getTheBestResult(Map<Clazz, Long> classNameCountResult) {
         return classNameCountResult.entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
+    }
+
+    private DistanceResult calculateDistance(Sample trainingSample, Sample sampleToClassify) {
+        EuclideanDistance euclideanDistance = new EuclideanDistance();
+        double distance = euclideanDistance.compute(trainingSample.getFeatures(), sampleToClassify.getFeatures());
+        return new DistanceResult(trainingSample.getClazz(), distance);
     }
 }

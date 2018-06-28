@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static backend.classfier.NearestMean.getNearestMeanClassName;
-import static backend.classfier.NearestNeighborhood.getNearestClassName;
 
 /**
  * Created by Dawid on 15.06.2018 at 00:35.
@@ -35,28 +33,17 @@ public class ClassfierEngine {
     }
 
     public double nearestMean() {
-        Long correctClassify = 0L;
-        for (Sample sampleToClassify : samplesToClassify) {
-            String nearestClassName = getNearestMeanClassName(trainingSamples, sampleToClassify, k, featureCount);
-
-            if (nearestClassName.equals(sampleToClassify.getClazz().getName())) {
-                correctClassify = correctClassify + 1;
-            }
-        }
-
-        return ((double) correctClassify / samplesToClassify.size() * 100);
+        NearestMean nearestMean = new NearestMean(trainingSamples, samplesToClassify, k, featureCount);
+        return getCorrectlyClassifyPercentage(nearestMean);
     }
 
     public double nearestNeighborhood() {
-        Long correctClassify = 0L;
-        for (Sample sampleToClassify : samplesToClassify) {
-            String nearestClassName = getNearestClassName(trainingSamples, sampleToClassify, k);
+        NearestNeighborhood nearestNeighborhood = new NearestNeighborhood(trainingSamples, samplesToClassify, k);
+        return getCorrectlyClassifyPercentage(nearestNeighborhood);
+    }
 
-            if (nearestClassName.equals(sampleToClassify.getClazz().getName())) {
-                correctClassify = correctClassify + 1;
-            }
-        }
-
+    private double getCorrectlyClassifyPercentage(AbstractClassfier abstractClassfier) {
+        long correctClassify = abstractClassfier.classify().stream().filter(ClassfierResult::isClassfieCorrectly).count();
         return ((double) correctClassify / samplesToClassify.size() * 100);
     }
 

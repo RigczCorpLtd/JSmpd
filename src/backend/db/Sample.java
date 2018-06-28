@@ -12,7 +12,7 @@ public class Sample {
     private double[] features;
     private int id;
 
-    Sample(Clazz clazz, double[] features, int id) {
+    public Sample(Clazz clazz, double[] features, int id) {
         this.clazz = clazz;
         this.features = features;
         this.id = id;
@@ -38,5 +38,9 @@ public class Sample {
     public int hashCode() {
 
         return Objects.hash(id);
+    }
+
+    public int getId() {
+        return id;
     }
 }

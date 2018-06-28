@@ -5,7 +5,6 @@ import backend.db.Sample;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,43 +12,46 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
-public class NearestMean {
+public class NearestMean extends AbstractClassfier{
 
     private final List<Sample> trainingSample;
-    private final Sample sampleToClassify;
     private final Long k;
+    private final List<Sample> samplesToClassify;
     private int featureCount;
     private final Map<Clazz, Double[]> classMean;
 
-    public NearestMean(List<Sample> trainingSample, Sample sampleToClassify, Long k, int featureCount) {
+    public NearestMean(List<Sample> trainingSample, List<Sample> samplesToClassify, Long k, int featureCount) {
         this.trainingSample = trainingSample;
-        this.sampleToClassify = sampleToClassify;
+        this.samplesToClassify = samplesToClassify;
         this.k = k;
         this.featureCount = featureCount;
         classMean = new HashMap<>();
     }
 
-    public static String getNearestMeanClassName(List<Sample> trainingSample, Sample sampleToClassify, Long k, int featureCount) {
-        return new NearestMean(trainingSample, sampleToClassify, k, featureCount).getNearestClassName();
+    @Override
+    public List<ClassfierResult> classify() {
+        Map<Clazz, List<Sample>> trainingSamples = groupByClass();
+        calculateClassMeans(trainingSamples);
+
+        return samplesToClassify.stream().map(this::getNearestClassName).collect(Collectors.toList());
     }
 
-    private String getNearestClassName() {
-        Map<Clazz, List<Sample>> classSamples = groupByClass();
-        calculateClassMeans(classSamples);
+    private ClassfierResult getNearestClassName(Sample sampleToClassify) {
         Map<Clazz, Double> classDistances = classMean.entrySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> calculateDistance(stream(e.getValue()).mapToDouble(Double::valueOf).toArray())
+                        e -> calculateDistance(stream(e.getValue()).mapToDouble(Double::valueOf).toArray(), sampleToClassify)
                 ));
-        return getClassWithTheLowestDistance(classDistances);
+        Clazz classWithTheLowestDistance = getClassWithTheLowestDistance(classDistances);
+        return new ClassfierResult(sampleToClassify, classWithTheLowestDistance);
     }
 
-    private String getClassWithTheLowestDistance(Map<Clazz, Double> classDistances) {
-        return classDistances.entrySet().stream().min(Map.Entry.comparingByValue()).get().getKey().getName();
+    private Clazz getClassWithTheLowestDistance(Map<Clazz, Double> classDistances) {
+        return classDistances.entrySet().stream().min(Map.Entry.comparingByValue()).get().getKey();
     }
 
-    private double calculateDistance(double[] trainSampleVector) {
+    private double calculateDistance(double[] trainSampleVector, Sample sampleToClassify) {
         EuclideanDistance euclideanDistance = new EuclideanDistance();
         return euclideanDistance.compute(trainSampleVector, sampleToClassify.getFeatures());
     }
@@ -72,4 +74,5 @@ public class NearestMean {
     private Map<Clazz, List<Sample>> groupByClass() {
         return trainingSample.stream().collect(Collectors.groupingBy(Sample::getClazz));
     }
+
 }

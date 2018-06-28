@@ -14,6 +14,11 @@ public class Clazz {
         this.name = name;
     }
 
+    public Clazz(String name, List<Sample> samples) {
+        this.name = name;
+        this.samples = samples;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

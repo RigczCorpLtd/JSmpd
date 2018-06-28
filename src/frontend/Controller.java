@@ -160,7 +160,8 @@ public class Controller {
     public void onClassifiersExecute() {
         double result = 0;
         switch ((Classifier) classifiersComboBox.getSelectionModel().getSelectedItem()) {
-            case NN: case kNN:
+            case NN:
+            case kNN:
                 result = classfierEngine.nearestNeighborhood();
                 break;
             case NM:
@@ -184,6 +185,8 @@ public class Controller {
 
     @FXML
     public void onKchange() {
-        classfierEngine.setK(Long.valueOf((Integer) kComboBox.getSelectionModel().getSelectedItem()));
+        if (classfierEngine != null) {
+            classfierEngine.setK(Long.valueOf((Integer) kComboBox.getSelectionModel().getSelectedItem()));
+        }
     }
 }
