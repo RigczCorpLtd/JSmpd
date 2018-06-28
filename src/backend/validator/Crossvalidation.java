@@ -6,13 +6,9 @@ import backend.classfier.NearestMean;
 import backend.classfier.NearestNeighborhood;
 import backend.db.Database;
 import backend.db.Sample;
-import frontend.Classifier;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 public class Crossvalidation {
     private final Database database;
@@ -38,7 +34,7 @@ public class Crossvalidation {
             analyzedSample.removeAll(slice);
             NN+= nearestNeighborhood(slice, analyzedSample, 1L);
             kNN+= nearestNeighborhood(slice, analyzedSample, k);
-            MM+= nearestMean(slice, analyzedSample, 1L, database.getNumberOfFeatures());
+            MM+= nearestMean(slice, analyzedSample, database.getNumberOfFeatures());
         }
         return new Result(NN/ slices.size(), kNN / slices.size(), MM / slices.size());
     }
@@ -56,8 +52,8 @@ public class Crossvalidation {
         return slices;
     }
 
-    public double nearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, Long k, int featureCount) {
-        NearestMean nearestMean = new NearestMean(trainingSamples, samplesToClassify, k, featureCount);
+    public double nearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, int featureCount) {
+        NearestMean nearestMean = new NearestMean(trainingSamples, samplesToClassify, featureCount);
         return getCorrectlyClassifyPercentage(nearestMean, samplesToClassify);
     }
 

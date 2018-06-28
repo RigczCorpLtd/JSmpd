@@ -6,13 +6,10 @@ import backend.classfier.NearestMean;
 import backend.classfier.NearestNeighborhood;
 import backend.db.Database;
 import backend.db.Sample;
-import frontend.Classifier;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class Bootstrap {
     private final Database database;
@@ -36,13 +33,13 @@ public class Bootstrap {
             List<Sample> samples = getRandomSamples();
             NN += nearestNeighborhood(trainingSample, samples, 1L);
             kNN += nearestNeighborhood(trainingSample, samples, k);
-            MM += nearestMean(trainingSample, samples, 1L, database.getNumberOfFeatures());
+            MM += nearestMean(trainingSample, samples,  database.getNumberOfFeatures());
         }
         return new Result(NN/ numberOfIterations, kNN / numberOfIterations, MM / numberOfIterations);
     }
 
-    public double nearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, Long k, int featureCount) {
-        NearestMean nearestMean = new NearestMean(trainingSamples, samplesToClassify, k, featureCount);
+    public double nearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, int featureCount) {
+        NearestMean nearestMean = new NearestMean(trainingSamples, samplesToClassify, featureCount);
         return getCorrectlyClassifyPercentage(nearestMean, samplesToClassify);
     }
 
