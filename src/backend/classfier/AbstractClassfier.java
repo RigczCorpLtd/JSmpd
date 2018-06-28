@@ -1,5 +1,8 @@
 package backend.classfier;
 
+import backend.db.Sample;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
+
 import java.util.List;
 
 /**
@@ -8,4 +11,9 @@ import java.util.List;
 public abstract class AbstractClassfier {
 
     public abstract List<ClassfierResult> classify();
+
+    protected double calculateDistance(double[] trainSampleVector, Sample sampleToClassify) {
+        EuclideanDistance euclideanDistance = new EuclideanDistance();
+        return euclideanDistance.compute(trainSampleVector, sampleToClassify.getFeatures());
+    }
 }
