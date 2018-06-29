@@ -4,6 +4,8 @@ import backend.classfier.ClassfierEngine;
 import backend.db.Database;
 import backend.fisher.FisherRunner;
 import backend.sfs.SFS;
+import backend.validator.Bootstrap;
+import backend.validator.Crossvalidation;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
@@ -45,9 +47,17 @@ public class Controller {
     @FXML
     private TextArea classfiersOutput;
 
+    @FXML
+    private TextField sliceSizeTextBox;
+
+    @FXML
+    private TextField iterationsTextBox;
+
     private ToggleGroup featureToggleGroup;
     private Database database;
     private ClassfierEngine classfierEngine;
+    private Bootstrap bootstrap;
+    private Crossvalidation crossvalidation;
 
 
     @FXML
@@ -154,6 +164,8 @@ public class Controller {
     public void onClassifiersTrain() {
         classfierEngine = new ClassfierEngine(database, Long.valueOf(trainingPart.getText()), (Integer) kComboBox.getSelectionModel().getSelectedItem());
         classfierEngine.prepareSamples();
+        bootstrap = new Bootstrap(database, Integer.parseInt(trainingPart.getText()), Integer.parseInt(iterationsTextBox.getText()));
+        crossvalidation = new Crossvalidation(database, Integer.parseInt(sliceSizeTextBox.getText()));
     }
 
     @FXML
@@ -172,6 +184,11 @@ public class Controller {
         }
 
         classfiersOutput.setText("Dobrze zaklasyfikowano: " + result + "%");
+        double bootstrapRes = bootstrap.compute(classfierEngine.getK() != null ? classfierEngine.getK() : 1, (Classifier) classifiersComboBox.getSelectionModel().getSelectedItem());
+        classfiersOutput.appendText("\n Bootstrap" + String.valueOf(bootstrapRes));
+        double crossRes = crossvalidation.compute((Integer) kComboBox.getSelectionModel().getSelectedItem(), (Classifier) classifiersComboBox.getSelectionModel().getSelectedItem());
+        classfiersOutput.appendText("\n Crossvalidate" + String.valueOf(crossRes));
+
     }
 
     @FXML

@@ -2,54 +2,57 @@ package backend.validator;
 
 import backend.classfier.AbstractClassfier;
 import backend.classfier.ClassfierResult;
+import backend.classfier.KNM;
 import backend.classfier.NearestMean;
 import backend.classfier.NearestNeighborhood;
 import backend.db.Database;
 import backend.db.Sample;
+import com.google.common.collect.Lists;
+import frontend.Classifier;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Crossvalidation {
     private final Database database;
-    private double sampleSizePercentage;
+    private List<List<Sample>> slices = null;
 
-    public Crossvalidation(Database database, double sampleSizePercentage) {
+    public Crossvalidation(Database database, int sliceCount) {
         this.database = database;
-        this.sampleSizePercentage = sampleSizePercentage;
+        slices = getSlices(database.getMeasurements().size(), sliceCount);
+
     }
 
-    public Result compute(long k) {
-        double NN = 0;
-        double kNN = 0;
-        double MM = 0;
-        double kNM = 0;
-        double sliceFraction = sampleSizePercentage / 100d;
-        int numberOfMeasurments = database.getMeasurements().size();
-        int sliceSize = (int) Math.floor(numberOfMeasurments * sliceFraction);
+    public double compute(long k, Classifier classifier) {
+        double sum = 0;
         List<Sample> measurements = database.getMeasurements();
-        List<List<Sample>> slices = getSlices(numberOfMeasurments, sliceSize);
+
         for (List<Sample> slice : slices) {
             List<Sample> analyzedSample = new ArrayList<>(measurements);
             analyzedSample.removeAll(slice);
-            NN+= nearestNeighborhood(slice, analyzedSample, 1L);
-            kNN+= nearestNeighborhood(slice, analyzedSample, k);
-            MM+= nearestMean(slice, analyzedSample, database.getNumberOfFeatures());
+            switch (classifier) {
+                case NM:
+                    sum += nearestMean(slice, analyzedSample,  database.getNumberOfFeatures());
+                    break;
+                case NN:
+                    sum += nearestNeighborhood(slice, analyzedSample, 1L);
+                    break;
+                case kNM:
+                    sum += kNearestMean(slice, analyzedSample, k , database.getNumberOfFeatures());
+                    break;
+                case kNN:
+                    sum += nearestNeighborhood(slice, analyzedSample, k);
+                    break;
+            }
         }
-        return new Result(NN/ slices.size(), kNN / slices.size(), MM / slices.size());
+        return sum/ slices.size();
     }
 
-    private List<List<Sample>> getSlices(int numberOfMeasurments, int sliceSize) {
-        List<List<Sample>> slices = new ArrayList<>();
-        List<Sample> cuurentSlice = new ArrayList<>();
-        for (int i = 0; i < numberOfMeasurments; i++) {
-            if (numberOfMeasurments % sliceSize == 0) {
-                cuurentSlice = new ArrayList<>();
-                slices.add(cuurentSlice);
-            }
-            cuurentSlice.add(database.getMeasurements().get(i));
-        }
-        return slices;
+    private List<List<Sample>> getSlices(int numberOfMeasurments, int sliceCount) {
+        List<Sample> shuffled = new ArrayList<>(database.getMeasurements());
+        Collections.shuffle(shuffled);
+        return Lists.partition(shuffled, numberOfMeasurments / sliceCount);
     }
 
     public double nearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, int featureCount) {
@@ -62,20 +65,13 @@ public class Crossvalidation {
         return getCorrectlyClassifyPercentage(nearestNeighborhood, samplesToClassify);
     }
 
+    public double kNearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, Long k, int featureCount) {
+        KNM knm = new KNM(trainingSamples, samplesToClassify, k, featureCount);
+        return getCorrectlyClassifyPercentage(knm, samplesToClassify);
+    }
+
     private double getCorrectlyClassifyPercentage(AbstractClassfier abstractClassfier, List<Sample> samplesToClassify) {
         long correctClassify = abstractClassfier.classify().stream().filter(ClassfierResult::isClassfieCorrectly).count();
         return ((double) correctClassify / samplesToClassify.size() * 100);
-    }
-
-    public static class Result {
-        public final double NNavg;
-        public final double kNNavg;
-        public final double MMavg;
-
-        public Result(double NNavg, double kNNavg, double MMavg) {
-            this.NNavg = NNavg;
-            this.kNNavg = kNNavg;
-            this.MMavg = MMavg;
-        }
     }
 }

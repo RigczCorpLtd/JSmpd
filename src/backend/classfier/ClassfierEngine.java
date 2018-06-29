@@ -78,4 +78,12 @@ public class ClassfierEngine {
     public void setK(Long k) {
         this.k = k;
     }
+
+    public Long getK() {
+        return k;
+    }
+
+    public List<Sample> getTrainingSamples() {
+        return trainingSamples;
+    }
 }

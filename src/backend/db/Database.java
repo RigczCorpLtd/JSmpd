@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
@@ -79,7 +80,7 @@ public class Database {
                 allSamples.addAll(clazzes.get(i).getSamples());
             }
         }
-        return allSamples;
+        return Collections.unmodifiableList(allSamples);
     }
 
     public int getNumberOfFeatures() {

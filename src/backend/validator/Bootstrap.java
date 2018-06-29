@@ -2,10 +2,12 @@ package backend.validator;
 
 import backend.classfier.AbstractClassfier;
 import backend.classfier.ClassfierResult;
+import backend.classfier.KNM;
 import backend.classfier.NearestMean;
 import backend.classfier.NearestNeighborhood;
 import backend.db.Database;
 import backend.db.Sample;
+import frontend.Classifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,29 +15,46 @@ import java.util.Random;
 
 public class Bootstrap {
     private final Database database;
-    private final int sampleSize;
+    private final int trainingSampleSize;
     private final int numberOfIterations;
-    private List<Sample> trainingSample;
 
-    public Bootstrap(Database database, int sampleSize, int numberOfIterations, List<Sample> trainingSample) {
+    List<List<Sample>> trainigSamples = new ArrayList<>();
+    List<List<Sample>> currents = new ArrayList<>();
+
+    public Bootstrap(Database database, int trainingSampleSize, int numberOfIterations) {
         this.database = database;
-        this.sampleSize = sampleSize;
+        this.trainingSampleSize = trainingSampleSize;
         this.numberOfIterations = numberOfIterations;
-        this.trainingSample = trainingSample;
+
+        for (int i = 0; i < numberOfIterations; i++) {
+            List<Sample> trainingSample = getRandomSamples();
+            List<Sample> current = new ArrayList<>(database.getMeasurements());
+            current.removeAll(trainingSample);
+            currents.add(current);
+            trainigSamples.add(trainingSample);
+        }
     }
 
-    public Result compute(long k) {
-        double NN = 0;
-        double kNN = 0;
-        double MM = 0;
-        double kNM = 0;
+    public double compute(long k, Classifier classifier) {
+        double sum = 0;
         for (int i = 0; i < numberOfIterations; i++) {
-            List<Sample> samples = getRandomSamples();
-            NN += nearestNeighborhood(trainingSample, samples, 1L);
-            kNN += nearestNeighborhood(trainingSample, samples, k);
-            MM += nearestMean(trainingSample, samples,  database.getNumberOfFeatures());
+            switch (classifier) {
+                case NM:
+                    sum += nearestMean(trainigSamples.get(i), currents.get(i),  database.getNumberOfFeatures());
+                    break;
+                case NN:
+                    sum += nearestNeighborhood(trainigSamples.get(i), currents.get(i), 1L);
+                    break;
+                case kNM:
+                    sum += kNearestMean(trainigSamples.get(i), currents.get(i), k , database.getNumberOfFeatures());
+                    break;
+                case kNN:
+                    sum += nearestNeighborhood(trainigSamples.get(i), currents.get(i), k);
+                    break;
+            }
+
         }
-        return new Result(NN/ numberOfIterations, kNN / numberOfIterations, MM / numberOfIterations);
+        return sum/numberOfIterations;
     }
 
     public double nearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, int featureCount) {
@@ -46,6 +65,11 @@ public class Bootstrap {
     public double nearestNeighborhood(List<Sample> trainingSamples, List<Sample> samplesToClassify, Long k) {
         NearestNeighborhood nearestNeighborhood = new NearestNeighborhood(trainingSamples, samplesToClassify, k);
         return getCorrectlyClassifyPercentage(nearestNeighborhood, samplesToClassify);
+    }
+
+    public double kNearestMean(List<Sample> trainingSamples, List<Sample> samplesToClassify, Long k, int featureCount) {
+        KNM knm = new KNM(trainingSamples, samplesToClassify, k, featureCount);
+        return getCorrectlyClassifyPercentage(knm, samplesToClassify);
     }
 
     private double getCorrectlyClassifyPercentage(AbstractClassfier abstractClassfier, List<Sample> samplesToClassify) {
@@ -60,7 +84,7 @@ public class Bootstrap {
         List<Sample> copiedList = new ArrayList<>();
         copiedList.addAll(database.getMeasurements());
 
-        for (int i = 0; i < sampleSize; i++) {
+        for (int i = 0; i < trainingSampleSize; i++) {
             int randomIndex = rand.nextInt(copiedList.size());
             Sample randomElement = copiedList.get(randomIndex);
             copiedList.remove(randomIndex);
@@ -68,17 +92,5 @@ public class Bootstrap {
         }
 
         return trainingSamples;
-    }
-
-    public static class Result {
-        public final double NNavg;
-        public final double kNNavg;
-        public final double MMavg;
-
-        public Result(double NNavg, double kNNavg, double MMavg) {
-            this.NNavg = NNavg;
-            this.kNNavg = kNNavg;
-            this.MMavg = MMavg;
-        }
     }
 }
