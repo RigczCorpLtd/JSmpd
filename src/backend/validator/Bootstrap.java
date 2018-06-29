@@ -84,7 +84,7 @@ public class Bootstrap {
         List<Sample> copiedList = new ArrayList<>();
         copiedList.addAll(database.getMeasurements());
 
-        for (int i = 0; i < trainingSampleSize; i++) {
+        for (int i = 0; i < (trainingSampleSize / 100d) * database.getMeasurements().size(); i++) {
             int randomIndex = rand.nextInt(copiedList.size());
             Sample randomElement = copiedList.get(randomIndex);
             copiedList.remove(randomIndex);
